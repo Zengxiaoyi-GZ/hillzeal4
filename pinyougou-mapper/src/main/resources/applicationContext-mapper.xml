@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 加载属性文件（连接数据库的驱动、用户和密码、连接池里最大最小连接对象） 在服务提供者加载-->
+    <!--<context:property-placeholder location="classpath:props/db.properties"/>-->
+
+    <!-- 配置数据源 把db.properties的属性赋值到dataSource对象-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          destroy-method="close">
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+        <property name="minIdle" value="${jdbc.minIdle}"/>
+    </bean>
+
+    <!-- 配置mybatis框架的核心对象SqlSessionFactoryBean，交给spring创建-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 设置数据源 -->
+        <property name="dataSource" ref="dataSource"/>
+
+        <!-- 设置类型别名 (采用包扫描) 【实体类与数据库表的映射】
+             默认别名是类的名字，不区分大小写，即这个包下所有实体类都定义别名-->
+        <property name="typeAliasesPackage" value="com.pinyougou.pojo"/>
+        <!-- 设置mybatis-config.xml，开启驼峰命名(方便自动映射,【列名->实体类属性名的映射】） -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+
+        <!-- 设置SQL映射文件  设置执行SQL语句的动态代理对象生成的位置-->
+        <property name="mapperLocations" value="classpath:mappers/**/*.xml"/>
+
+    </bean>
+
+    <!--(批量配置)
+        扫描所有的数据访问层（dao）接口如com.pinyougou.mapper，创建动态代理对象，然后交给Spring容器
+        bean的id: 默认为接口的类名，首字母小写，如brandMapper
+    -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.pinyougou.mapper"/>
+    </bean>
+
+    <!-- 配置数据源事务管理器(DataSourceTransactionManager) -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 配置开启事务注解驱动 -->
+    <tx:annotation-driven />
+
+</beans>

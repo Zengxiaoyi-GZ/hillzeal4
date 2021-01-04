@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://code.alibabatech.com/schema/dubbo
+         http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--这个标签只能在该模块使用一次-->
+    <context:property-placeholder location="classpath:props/*.properties"/>
+    <!--导入数据访问层的配置文件,用于访问数据访问层-->
+    <import resource="classpath:applicationContext-mapper.xml"/>
+
+    <!-- 配置当前应用的名称 -->
+    <dubbo:application name="pinyougou-sellergoods-service"/>
+    <!--使用zookeeper作为注册中心-->
+    <dubbo:registry address="zookeeper://192.168.12.131:2181" />
+
+    <!--暴露这个服务pinyougou.sellergoods.service的请求端口号是20880 -->
+    <dubbo:protocol name="dubbo" port="20880"/>
+    <!-- 配置采用包扫描来暴露服务（提供者） -->
+    <dubbo:annotation package="com.pinyougou.sellergoods.service.impl"/>
+
+    <dubbo:provider delay="-1" timeout="120000" retries="0"/>
+
+</beans>
